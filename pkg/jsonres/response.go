@@ -1,4 +1,4 @@
-package response
+package jsonres
 
 type SuccessResponse struct {
 	Success bool   `json:"success"`

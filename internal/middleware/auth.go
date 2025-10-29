@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"hotel-booking-api/pkg/response"
+	"hotel-booking-api/pkg/jsonres"
 	"hotel-booking-api/pkg/util"
 	"net/http"
 	"strings"
@@ -14,21 +14,21 @@ func AuthMiddleware() echo.MiddlewareFunc {
 		return func(echo echo.Context) error {
 			authHeader := echo.Request().Header.Get("Authorization")
 			if authHeader == "" {
-				return echo.JSON(http.StatusUnauthorized, response.Error(
+				return echo.JSON(http.StatusUnauthorized, jsonres.Error(
 					"UNAUTHORIZED", "Missing authorization header", nil,
 				))
 			}
 
 			tokenParts := strings.Split(authHeader, " ")
 			if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
-				return echo.JSON(http.StatusUnauthorized, response.Error(
+				return echo.JSON(http.StatusUnauthorized, jsonres.Error(
 					"UNAUTHORIZED", "Invalid authorization format", nil,
 				))
 			}
 
 			claims, err := util.ParseJWT(tokenParts[1])
 			if err != nil {
-				return echo.JSON(http.StatusUnauthorized, response.Error(
+				return echo.JSON(http.StatusUnauthorized, jsonres.Error(
 					"UNAUTHORIZED", "Invalid token", nil,
 				))
 			}
@@ -46,7 +46,7 @@ func AdminOnly() echo.MiddlewareFunc {
 		return func(echo echo.Context) error {
 			role := echo.Get("role")
 			if role != "ADMIN" {
-				return echo.JSON(http.StatusForbidden, response.Error(
+				return echo.JSON(http.StatusForbidden, jsonres.Error(
 					"FORBIDDEN", "Admin access required", nil,
 				))
 			}

@@ -1,8 +1,8 @@
 package middleware
 
 import (
+	"hotel-booking-api/pkg/jsonres"
 	"hotel-booking-api/pkg/logger"
-	"hotel-booking-api/pkg/response"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -24,6 +24,6 @@ func ErrorHandler(err error, c echo.Context) {
 	)
 
 	if !c.Response().Committed {
-		c.JSON(code, response.Error("ERROR", message, nil))
+		c.JSON(code, jsonres.Error("ERROR", message, nil))
 	}
 }
