@@ -24,21 +24,21 @@ type WebhookRequest struct {
 	Status        string `json:"status"`
 }
 
-func (h *PaymentHandler) HandleWebhook(echo echo.Context) error {
+func (h *PaymentHandler) HandleWebhook(c echo.Context) error {
 	var req WebhookRequest
-	if err := echo.Bind(&req); err != nil {
-		return echo.JSON(http.StatusBadRequest, jsonres.Error(
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, jsonres.Error(
 			"BAD_REQUEST", "Invalid request body", err.Error(),
 		))
 	}
 
 	if err := h.paymentService.HandlePaymentCallback(req.BookingID, req.TransactionID, req.Status); err != nil {
-		return echo.JSON(http.StatusInternalServerError, jsonres.Error(
+		return c.JSON(http.StatusInternalServerError, jsonres.Error(
 			"WEBHOOK_FAILED", err.Error(), nil,
 		))
 	}
 
-	return echo.JSON(http.StatusOK, jsonres.Success(
+	return c.JSON(http.StatusOK, jsonres.Success(
 		"Payment webhook successfully", nil,
 	))
 }

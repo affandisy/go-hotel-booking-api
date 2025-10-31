@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"hotel-booking-api/internal/domain"
 	"hotel-booking-api/internal/dto/request"
 	dto "hotel-booking-api/internal/dto/response"
 	"hotel-booking-api/internal/service"
@@ -21,60 +22,61 @@ func NewAuthHandler(authService service.AuthService) *AuthHandler {
 	}
 }
 
-func (h *AuthHandler) Register(echo echo.Context) error {
+func (h *AuthHandler) Register(c echo.Context) error {
 	var req request.RegisterRequest
 
-	if err := echo.Bind(&req); err != nil {
-		return echo.JSON(http.StatusBadRequest, jsonres.Error(
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, jsonres.Error(
 			"BAD_REQUEST", "Invalid request body", err.Error(),
 		))
 	}
 
 	if errs := validator.Validate(&req); len(errs) > 0 {
-		return echo.JSON(http.StatusBadRequest, jsonres.Error(
+		return c.JSON(http.StatusBadRequest, jsonres.Error(
 			"VALIDATION_ERROR", "Validation failed", errs,
 		))
 	}
 
 	if req.Role == "" {
-		req.Role = "CUSTOMER"
+		req.Role = domain.RoleCustomer
 	}
 
 	user, err := h.authService.Register(req.Name, req.Email, req.Password, req.Role)
 	if err != nil {
-		return echo.JSON(http.StatusBadRequest, jsonres.Error(
+		return c.JSON(http.StatusBadRequest, jsonres.Error(
 			"REGISTER_FAILED", err.Error(), nil,
 		))
 	}
 
-	return echo.JSON(http.StatusCreated, jsonres.Success(
+	return c.JSON(http.StatusCreated, jsonres.Success(
 		"Registration successfull", dto.ToUserResponse(user),
 	))
 }
 
-func (h *AuthHandler) Login(echo echo.Context) error {
+func (h *AuthHandler) Login(c echo.Context) error {
 	var req request.LoginRequest
 
-	if err := echo.Bind(&req); err != nil {
-		return echo.JSON(http.StatusBadRequest, jsonres.Error(
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, jsonres.Error(
 			"BAD_REQUEST", "Invalid request body", err.Error(),
 		))
 	}
 
 	if errs := validator.Validate(&req); len(errs) > 0 {
-		return echo.JSON(http.StatusBadRequest, jsonres.Error(
+		return c.JSON(http.StatusBadRequest, jsonres.Error(
 			"VALIDATION_ERROR", "Validation failed", errs,
 		))
 	}
 
-	token, err := h.authService.Login(req.Email, req.Password)
+	token, user, err := h.authService.Login(req.Email, req.Password)
 	if err != nil {
-		return echo.JSON(http.StatusUnauthorized, jsonres.Error(
+		return c.JSON(http.StatusUnauthorized, jsonres.Error(
 			"LOGIN_FAILED", err.Error(), nil,
 		))
 	}
 
-	return echo.JSON(http.StatusOK, jsonres.Success("Login Successful", dto.LoginResponse{
+	return c.JSON(http.StatusOK, jsonres.Success("Login Successful", dto.LoginResponse{
 		Token: token,
+		User:  dto.ToUserResponse(user),
 	}))
 }

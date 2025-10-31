@@ -14,16 +14,24 @@ func ErrorHandler(err error, c echo.Context) {
 
 	if he, ok := err.(*echo.HTTPError); ok {
 		code = he.Code
-		message = he.Message.(string)
+		if msg, ok := he.Message.(string); ok {
+			message = msg
+		}
+	}
+
+	requestID := ""
+	if rid := c.Get("requestID"); rid != nil {
+		requestID = rid.(string)
 	}
 
 	logger.Error("Request error",
 		"path", c.Request().URL.Path,
 		"method", c.Request().Method,
 		"error", err.Error(),
+		"request_id", requestID,
 	)
 
 	if !c.Response().Committed {
-		c.JSON(code, jsonres.Error("ERROR", message, nil))
+		c.JSON(code, jsonres.ErrorWithRequestID("ERROR", message, nil, requestID))
 	}
 }

@@ -23,16 +23,16 @@ func NewRoomHandler(roomService service.RoomService) *RoomHandler {
 	}
 }
 
-func (h *RoomHandler) CreateRoom(echo echo.Context) error {
+func (h *RoomHandler) CreateRoom(c echo.Context) error {
 	var req request.CreateRoomRequest
-	if err := echo.Bind(&req); err != nil {
-		return echo.JSON(http.StatusBadRequest, jsonres.Error(
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, jsonres.Error(
 			"BAD_REQUEST", "Invalid request body", err.Error(),
 		))
 	}
 
 	if errs := validator.Validate(&req); len(errs) > 0 {
-		return echo.JSON(http.StatusBadRequest, jsonres.Error(
+		return c.JSON(http.StatusBadRequest, jsonres.Error(
 			"VALIDATION_ERROR", "Validation failed", errs,
 		))
 	}
@@ -45,35 +45,35 @@ func (h *RoomHandler) CreateRoom(echo echo.Context) error {
 	}
 
 	if err := h.roomService.CreateRoom(room); err != nil {
-		return echo.JSON(http.StatusInternalServerError, jsonres.Error(
+		return c.JSON(http.StatusInternalServerError, jsonres.Error(
 			"CREATE_FAILED", err.Error(), nil,
 		))
 	}
 
-	return echo.JSON(http.StatusCreated, jsonres.Success(
+	return c.JSON(http.StatusCreated, jsonres.Success(
 		"Room created successfully", dto.ToRoomResponse(room),
 	))
 }
 
-func (h *RoomHandler) UpdateRoom(echo echo.Context) error {
-	roomID := echo.Param("id")
+func (h *RoomHandler) UpdateRoom(c echo.Context) error {
+	roomID := c.Param("id")
 
 	var req request.UpdateRoomRequest
-	if err := echo.Bind(&req); err != nil {
-		return echo.JSON(http.StatusBadRequest, jsonres.Error(
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, jsonres.Error(
 			"BAD_REQUEST", "Invalid request body", err.Error(),
 		))
 	}
 
 	if errs := validator.Validate(&req); len(errs) > 0 {
-		return echo.JSON(http.StatusBadRequest, jsonres.Error(
+		return c.JSON(http.StatusBadRequest, jsonres.Error(
 			"VALIDATION_ERROR", "Validation error", errs,
 		))
 	}
 
 	room, err := h.roomService.GetRoomByID(roomID)
 	if err != nil {
-		return echo.JSON(http.StatusNotFound, jsonres.Error(
+		return c.JSON(http.StatusNotFound, jsonres.Error(
 			"NOT_FOUND", "Room not found", nil,
 		))
 	}
@@ -83,22 +83,22 @@ func (h *RoomHandler) UpdateRoom(echo echo.Context) error {
 	room.Availability = req.Availability
 
 	if err := h.roomService.UpdateRoom(room); err != nil {
-		return echo.JSON(http.StatusInternalServerError, jsonres.Error(
+		return c.JSON(http.StatusInternalServerError, jsonres.Error(
 			"UPDATE_FAILED", "Failed to update room", err.Error(),
 		))
 	}
 
-	return echo.JSON(http.StatusOK, jsonres.Success(
+	return c.JSON(http.StatusOK, jsonres.Success(
 		"Room updated successfully", dto.ToRoomResponse(room),
 	))
 }
 
-func (h *RoomHandler) ListRoomsByHotel(echo echo.Context) error {
-	hotelID := echo.Param("hotelID")
+func (h *RoomHandler) ListRoomsByHotel(c echo.Context) error {
+	hotelId := c.Param("hotelId")
 
-	rooms, err := h.roomService.GetRoomsByHotel(hotelID)
+	rooms, err := h.roomService.GetRoomsByHotel(hotelId)
 	if err != nil {
-		return echo.JSON(http.StatusInternalServerError, jsonres.Error(
+		return c.JSON(http.StatusInternalServerError, jsonres.Error(
 			"FETCH_FAILED", "Failed to fetch room", err.Error(),
 		))
 	}
@@ -108,22 +108,22 @@ func (h *RoomHandler) ListRoomsByHotel(echo echo.Context) error {
 		roomResponses[i] = dto.ToRoomResponse(&room)
 	}
 
-	return echo.JSON(http.StatusOK, jsonres.Success(
+	return c.JSON(http.StatusOK, jsonres.Success(
 		"Room retrieved successfully", roomResponses,
 	))
 }
 
-func (h *RoomHandler) GetRoom(echo echo.Context) error {
-	roomID := echo.Param("id")
+func (h *RoomHandler) GetRoom(c echo.Context) error {
+	roomID := c.Param("id")
 
 	room, err := h.roomService.GetRoomByID(roomID)
 	if err != nil {
-		return echo.JSON(http.StatusNotFound, jsonres.Error(
+		return c.JSON(http.StatusNotFound, jsonres.Error(
 			"NOT_FOUND", "Room not found", nil,
 		))
 	}
 
-	return echo.JSON(http.StatusOK, jsonres.Success(
+	return c.JSON(http.StatusOK, jsonres.Success(
 		"Room retrieved successfully", dto.ToRoomResponse(room),
 	))
 }

@@ -22,17 +22,17 @@ func NewHotelHandler(hotelService service.HotelService) *HotelHandler {
 	}
 }
 
-func (h *HotelHandler) CreateHotel(echo echo.Context) error {
+func (h *HotelHandler) CreateHotel(c echo.Context) error {
 	var req request.CreateHotelRequest
 
-	if err := echo.Bind(&req); err != nil {
-		return echo.JSON(http.StatusBadRequest, jsonres.Error(
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, jsonres.Error(
 			"BAD_REQUEST", "Invalid request body", err.Error(),
 		))
 	}
 
 	if errs := validator.Validate(&req); len(errs) > 0 {
-		return echo.JSON(http.StatusBadRequest, jsonres.Error(
+		return c.JSON(http.StatusBadRequest, jsonres.Error(
 			"VALIDATION_ERROR", "Validation failed", errs,
 		))
 	}
@@ -44,35 +44,35 @@ func (h *HotelHandler) CreateHotel(echo echo.Context) error {
 	}
 
 	if err := h.hotelService.CreateHotel(hotel); err != nil {
-		return echo.JSON(http.StatusInternalServerError, jsonres.Error(
+		return c.JSON(http.StatusInternalServerError, jsonres.Error(
 			"CREATE_FAILED", "Failed to create hotel", err.Error(),
 		))
 	}
 
-	return echo.JSON(http.StatusCreated, jsonres.Success(
+	return c.JSON(http.StatusCreated, jsonres.Success(
 		"Hotel created successfully", dto.ToHotelResponse(hotel),
 	))
 }
 
-func (h *HotelHandler) UpdateHotel(echo echo.Context) error {
-	hotelID := echo.Param("id")
+func (h *HotelHandler) UpdateHotel(c echo.Context) error {
+	hotelID := c.Param("id")
 
 	var req request.UpdateHotelRequest
-	if err := echo.Bind(&req); err != nil {
-		return echo.JSON(http.StatusBadRequest, jsonres.Error(
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, jsonres.Error(
 			"BAD_REQUEST", "Invalid request body", err.Error(),
 		))
 	}
 
 	if errs := validator.Validate(&req); len(errs) > 0 {
-		return echo.JSON(http.StatusBadRequest, jsonres.Error(
+		return c.JSON(http.StatusBadRequest, jsonres.Error(
 			"VALIDATION_ERROR", "Validation failed", errs,
 		))
 	}
 
 	hotel, err := h.hotelService.GetHotelDetail(hotelID)
 	if err != nil {
-		return echo.JSON(http.StatusNotFound, jsonres.Error(
+		return c.JSON(http.StatusNotFound, jsonres.Error(
 			"NOT_FOUND", "Hotel not found", nil,
 		))
 	}
@@ -82,20 +82,20 @@ func (h *HotelHandler) UpdateHotel(echo echo.Context) error {
 	hotel.Description = req.Description
 
 	if err := h.hotelService.UpdateHotel(hotel); err != nil {
-		return echo.JSON(http.StatusInternalServerError, jsonres.Error(
+		return c.JSON(http.StatusInternalServerError, jsonres.Error(
 			"UPDATE_FAILED", "Failed to update hotel", err.Error(),
 		))
 	}
 
-	return echo.JSON(http.StatusOK, jsonres.Success(
+	return c.JSON(http.StatusOK, jsonres.Success(
 		"Hotel updated successfully", dto.ToHotelResponse(hotel),
 	))
 }
 
-func (h *HotelHandler) ListHotels(echo echo.Context) error {
+func (h *HotelHandler) ListHotels(c echo.Context) error {
 	hotels, err := h.hotelService.ListHotel()
 	if err != nil {
-		return echo.JSON(http.StatusInternalServerError, jsonres.Error(
+		return c.JSON(http.StatusInternalServerError, jsonres.Error(
 			"FETCH_FAILED", "Failed to fetch hotels", err.Error(),
 		))
 	}
@@ -105,36 +105,36 @@ func (h *HotelHandler) ListHotels(echo echo.Context) error {
 		hotelResponse[i] = dto.ToHotelResponse(&hotel)
 	}
 
-	return echo.JSON(http.StatusOK, jsonres.Success(
+	return c.JSON(http.StatusOK, jsonres.Success(
 		"Hotels retrieved successfully", hotelResponse,
 	))
 }
 
-func (h *HotelHandler) GetHotel(echo echo.Context) error {
-	hotelID := echo.Param("id")
+func (h *HotelHandler) GetHotel(c echo.Context) error {
+	hotelID := c.Param("id")
 
 	hotel, err := h.hotelService.GetHotelDetail(hotelID)
 	if err != nil {
-		return echo.JSON(http.StatusNotFound, jsonres.Error(
+		return c.JSON(http.StatusNotFound, jsonres.Error(
 			"NOT_FOUND", "Hotel not found", nil,
 		))
 	}
 
-	return echo.JSON(http.StatusOK, jsonres.Success(
+	return c.JSON(http.StatusOK, jsonres.Success(
 		"Hotel retrieved successfully", dto.ToHotelResponse(hotel),
 	))
 }
 
-func (h *HotelHandler) DeleteHotel(echo echo.Context) error {
-	hotelID := echo.Param("id")
+func (h *HotelHandler) DeleteHotel(c echo.Context) error {
+	hotelID := c.Param("id")
 
 	if err := h.hotelService.DeleteHotel(hotelID); err != nil {
-		return echo.JSON(http.StatusInternalServerError, jsonres.Error(
+		return c.JSON(http.StatusInternalServerError, jsonres.Error(
 			"DELETE_FAILED", "Failed to delete hotel", err.Error(),
 		))
 	}
 
-	return echo.JSON(http.StatusOK, jsonres.Success(
+	return c.JSON(http.StatusOK, jsonres.Success(
 		"Hotel deleted successfully", nil,
 	))
 }
