@@ -7,10 +7,11 @@ type SuccessResponse struct {
 }
 
 type ErrorResponse struct {
-	Success bool   `json:"success"`
-	Error   string `json:"error"`
-	Message string `json:"message"`
-	Details any    `json:"details,omitempty"`
+	Success   bool   `json:"success"`
+	Error     string `json:"error"`
+	Message   string `json:"message"`
+	Details   any    `json:"details,omitempty"`
+	RequestID string `json:"request_id,omitempty"`
 }
 
 func Success(message string, data any) SuccessResponse {
@@ -27,5 +28,15 @@ func Error(err string, message string, details any) ErrorResponse {
 		Error:   err,
 		Message: message,
 		Details: details,
+	}
+}
+
+func ErrorWithRequestID(err string, message string, details any, requestID string) ErrorResponse {
+	return ErrorResponse{
+		Success:   false,
+		Error:     err,
+		Message:   message,
+		Details:   details,
+		RequestID: requestID,
 	}
 }

@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"hotel-booking-api/app/router"
 	"hotel-booking-api/internal/handler"
 	"hotel-booking-api/internal/middleware"
 	"hotel-booking-api/internal/repository"
+	"hotel-booking-api/internal/router"
 	"hotel-booking-api/internal/service"
 	"hotel-booking-api/pkg/config"
-	"hotel-booking-api/pkg/db"
+	"hotel-booking-api/pkg/database"
 	"hotel-booking-api/pkg/logger"
 	"hotel-booking-api/pkg/validator"
 	"log"
@@ -32,13 +32,13 @@ func main() {
 	logger.Init(cfg.App.Environment)
 	logger.Info("Starting Hotel Booking API", "version", cfg.App.Version)
 
-	db, err := db.InitPostgres(cfg)
+	db, err := database.InitPostgres(cfg)
 	if err != nil {
 		logger.Fatal("Failed to connect to database", "error", err)
 	}
 	logger.Info("Database connected successfully")
 
-	if err := db.AutoMigrate(db); err != nil {
+	if err := database.AutoMigrate(db); err != nil {
 		logger.Fatal("Failed to migrate database", "error", err)
 	}
 
@@ -57,7 +57,7 @@ func main() {
 	hotelService := service.NewHotelService(hotelRepo)
 	roomService := service.NewRoomService(roomRepo, hotelRepo)
 	bookingService := service.NewBookingService(db, bookingRepo, roomRepo, paymentRepo)
-	paymentService := service.NewPaymentService(bookingRepo, paymentRepo)
+	paymentService := service.NewPaymentService(bookingRepo, paymentRepo, roomRepo)
 
 	// Init handlers
 	authHandler := handler.NewAuthHandler(authService)
@@ -76,7 +76,11 @@ func main() {
 
 	// Global middleware
 	e.Use(echomiddleware.Recover())
-	e.Use(echomiddleware.CORS())
+	e.Use(echomiddleware.CORSWithConfig(echomiddleware.CORSConfig{
+		AllowOrigins: []string{"http://localhost:3000", "http//localhost:8080"},
+		AllowMethods: []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodPatch},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+	}))
 	e.Use(middleware.RequestLogger())
 
 	// Health check

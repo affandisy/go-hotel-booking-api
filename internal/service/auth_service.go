@@ -11,7 +11,7 @@ import (
 
 type AuthService interface {
 	Register(name, email, password, role string) (*domain.User, error)
-	Login(email, password string) (string, error)
+	Login(email, password string) (string, *domain.User, error)
 }
 
 type authService struct {
@@ -28,18 +28,22 @@ func NewAuthService(userRepo repository.UserRepository, validate *validator.Vali
 
 func (s *authService) Register(name, email, password, role string) (*domain.User, error) {
 	if err := s.validate.Var(email, "required,email"); err != nil {
-		return nil, errors.New("email tidak valid")
+		return nil, errors.New("invalid email format")
 	}
 
 	if err := s.validate.Var(password, "required,min=6"); err != nil {
-		return nil, errors.New("password minimal 6 karakter")
+		return nil, errors.New("password must be at least 6 characters")
 	}
 
 	if _, err := s.userRepo.FindByEmail(email); err == nil {
-		return nil, errors.New("email sudah terdaftar")
+		return nil, errors.New("email already registered")
 	}
 
-	hash, _ := util.HashPassword(password)
+	hash, err := util.HashPassword(password)
+	if err != nil {
+		return nil, errors.New("failed to hash password")
+	}
+
 	user := &domain.User{
 		Name:     name,
 		Email:    email,
@@ -54,20 +58,20 @@ func (s *authService) Register(name, email, password, role string) (*domain.User
 	return user, nil
 }
 
-func (s *authService) Login(email, password string) (string, error) {
+func (s *authService) Login(email, password string) (string, *domain.User, error) {
 	user, err := s.userRepo.FindByEmail(email)
 	if err != nil {
-		return "", errors.New("user tidak ditemukan")
+		return "", nil, errors.New("user tidak ditemukan")
 	}
 
 	if !util.CheckPassword(password, user.Password) {
-		return "", errors.New("password salah")
+		return "", nil, errors.New("password salah")
 	}
 
 	token, err := util.GenerateJWT(user.ID.String(), user.Role)
 	if err != nil {
-		return "", err
+		return "", nil, errors.New("failed to generate token")
 	}
 
-	return token, nil
+	return token, user, nil
 }
