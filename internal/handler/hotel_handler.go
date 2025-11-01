@@ -22,6 +22,17 @@ func NewHotelHandler(hotelService service.HotelService) *HotelHandler {
 	}
 }
 
+// CreateHotel godoc
+// @Summary Create a new hotel
+// @Description Create a new hotel (Admin only)
+// @Tags hotels
+// @Accept json
+// @Produce json
+// @Param request body request.CreateHotelRequest true "Hotel details"
+// @Success 201 {object} jsonres.SuccessResponse{data=response.HotelResponse}
+// @Failure 400 {object} jsonres.ErrorResponse
+// @Security BearerAuth
+// @Router /hotels [post]
 func (h *HotelHandler) CreateHotel(c echo.Context) error {
 	var req request.CreateHotelRequest
 
@@ -54,6 +65,18 @@ func (h *HotelHandler) CreateHotel(c echo.Context) error {
 	))
 }
 
+// UpdateHotel godoc
+// @Summary Update a hotel
+// @Description Update hotel details (Admin only)
+// @Tags hotels
+// @Accept json
+// @Produce json
+// @Param id path string true "Hotel ID"
+// @Param request body request.UpdateHotelRequest true "Hotel details"
+// @Success 200 {object} jsonres.SuccessResponse{data=response.HotelResponse}
+// @Failure 400 {object} jsonres.ErrorResponse
+// @Security BearerAuth
+// @Router /hotels/{id} [put]
 func (h *HotelHandler) UpdateHotel(c echo.Context) error {
 	hotelID := c.Param("id")
 
@@ -92,6 +115,15 @@ func (h *HotelHandler) UpdateHotel(c echo.Context) error {
 	))
 }
 
+// ListHotels godoc
+// @Summary List all hotels
+// @Description Get a list of all hotels
+// @Tags hotels
+// @Accept json
+// @Produce json
+// @Success 200 {object} jsonres.SuccessResponse{data=[]response.HotelResponse}
+// @Failure 500 {object} jsonres.ErrorResponse
+// @Router /hotels [get]
 func (h *HotelHandler) ListHotels(c echo.Context) error {
 	hotels, err := h.hotelService.ListHotel()
 	if err != nil {
@@ -110,6 +142,16 @@ func (h *HotelHandler) ListHotels(c echo.Context) error {
 	))
 }
 
+// GetHotel godoc
+// @Summary Get hotel by ID
+// @Description Get detailed information about a specific hotel
+// @Tags hotels
+// @Accept json
+// @Produce json
+// @Param id path string true "Hotel ID"
+// @Success 200 {object} jsonres.SuccessResponse{data=response.HotelResponse}
+// @Failure 404 {object} jsonres.ErrorResponse
+// @Router /hotels/{id} [get]
 func (h *HotelHandler) GetHotel(c echo.Context) error {
 	hotelID := c.Param("id")
 
@@ -125,6 +167,17 @@ func (h *HotelHandler) GetHotel(c echo.Context) error {
 	))
 }
 
+// DeleteHotel godoc
+// @Summary Delete a hotel
+// @Description Delete a hotel by ID (Admin only)
+// @Tags hotels
+// @Accept json
+// @Produce json
+// @Param id path string true "Hotel ID"
+// @Success 200 {object} jsonres.SuccessResponse
+// @Failure 500 {object} jsonres.ErrorResponse
+// @Security BearerAuth
+// @Router /hotels/{id} [delete]
 func (h *HotelHandler) DeleteHotel(c echo.Context) error {
 	hotelID := c.Param("id")
 

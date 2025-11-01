@@ -22,6 +22,16 @@ func NewAuthHandler(authService service.AuthService) *AuthHandler {
 	}
 }
 
+// Register godoc
+// @Summary Register a new user
+// @Description Register a new user account
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body request.RegisterRequest true "Registration details"
+// @Success 201 {object} jsonres.SuccessResponse{data=response.UserResponse}
+// @Failure 400 {object} jsonres.ErrorResponse
+// @Router /auth/register [post]
 func (h *AuthHandler) Register(c echo.Context) error {
 	var req request.RegisterRequest
 
@@ -53,6 +63,16 @@ func (h *AuthHandler) Register(c echo.Context) error {
 	))
 }
 
+// Login godoc
+// @Summary Login user
+// @Description Authenticate user and return JWT token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body request.LoginRequest true "Login credentials"
+// @Success 200 {object} jsonres.SuccessResponse{data=response.LoginResponse}
+// @Failure 401 {object} jsonres.ErrorResponse
+// @Router /auth/login [post]
 func (h *AuthHandler) Login(c echo.Context) error {
 	var req request.LoginRequest
 

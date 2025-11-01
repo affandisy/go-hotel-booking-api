@@ -23,6 +23,17 @@ func NewRoomHandler(roomService service.RoomService) *RoomHandler {
 	}
 }
 
+// CreateRoom godoc
+// @Summary Create a room
+// @Description Create a new room hotel
+// @Tags rooms
+// @Accept json
+// @Produce json
+// @Param request body request.CreateRoomRequest true "Room details"
+// @Success 200 {object} jsonres.SuccessResponse{data=response.RoomResponse}
+// @Failure 400 {object} jsonres.ErrorResponse
+// @Security BearerAuth
+// @Router /rooms [post]
 func (h *RoomHandler) CreateRoom(c echo.Context) error {
 	var req request.CreateRoomRequest
 	if err := c.Bind(&req); err != nil {
@@ -55,6 +66,18 @@ func (h *RoomHandler) CreateRoom(c echo.Context) error {
 	))
 }
 
+// UpdateRoom godoc
+// @Summary Update a room
+// @Description Update rooms details (Admin only)
+// @Tags rooms
+// @Accept json
+// @Produce json
+// @Param id path string true "Room ID"
+// @Param request body request.UpdateRoomRequest true "Room details"
+// @Success 200 {object} jsonres.SuccessResponse{data=response.RoomResponse}
+// @Failure 400 {object} jsonres.ErrorResponse
+// @Security BearerAuth
+// @Router /rooms/{id} [put]
 func (h *RoomHandler) UpdateRoom(c echo.Context) error {
 	roomID := c.Param("id")
 
@@ -93,6 +116,16 @@ func (h *RoomHandler) UpdateRoom(c echo.Context) error {
 	))
 }
 
+// ListRoomsByHotel godoc
+// @Summary Get rooms by HotelId
+// @Description Get detailed information about a specific rooms by hotelId
+// @Tags rooms
+// @Accept json
+// @Produce json
+// @Param id path string true "hotelId"
+// @Success 200 {object} jsonres.SuccessResponse{data=response.RoomResponse}
+// @Failure 404 {object} jsonres.ErrorResponse
+// @Router /rooms/{id} [get]
 func (h *RoomHandler) ListRoomsByHotel(c echo.Context) error {
 	hotelId := c.Param("hotelId")
 
@@ -113,6 +146,16 @@ func (h *RoomHandler) ListRoomsByHotel(c echo.Context) error {
 	))
 }
 
+// GetRoom godoc
+// @Summary Get room by ID
+// @Description Get detailed information about a specific room
+// @Tags rooms
+// @Accept json
+// @Produce json
+// @Param id path string true "Room ID"
+// @Success 200 {object} jsonres.SuccessResponse{data=response.RoomResponse}
+// @Failure 404 {object} jsonres.ErrorResponse
+// @Router /rooms/{id} [get]
 func (h *RoomHandler) GetRoom(c echo.Context) error {
 	roomID := c.Param("id")
 

@@ -61,11 +61,11 @@ func (s *authService) Register(name, email, password, role string) (*domain.User
 func (s *authService) Login(email, password string) (string, *domain.User, error) {
 	user, err := s.userRepo.FindByEmail(email)
 	if err != nil {
-		return "", nil, errors.New("user tidak ditemukan")
+		return "", nil, errors.New("user not found")
 	}
 
 	if !util.CheckPassword(password, user.Password) {
-		return "", nil, errors.New("password salah")
+		return "", nil, errors.New("incorrect password")
 	}
 
 	token, err := util.GenerateJWT(user.ID.String(), user.Role)

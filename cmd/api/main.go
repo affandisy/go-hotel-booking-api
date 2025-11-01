@@ -21,8 +21,28 @@ import (
 
 	"github.com/labstack/echo/v4"
 	echomiddleware "github.com/labstack/echo/v4/middleware"
+	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
+// @title Hotel Booking API
+// @version 1.0
+// @description This is a hotel booking management API with Echo framework
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.url http://www.swagger.io/support
+// @contact.email support@swagger.io
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:8080
+// @BasePath /api/v1
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
 func main() {
 	cfg, err := config.Load()
 	if err != nil {
@@ -77,19 +97,17 @@ func main() {
 	// Global middleware
 	e.Use(echomiddleware.Recover())
 	e.Use(echomiddleware.CORSWithConfig(echomiddleware.CORSConfig{
-		AllowOrigins: []string{"http://localhost:3000", "http//localhost:8080"},
+		AllowOrigins: []string{"http://localhost:3000", "http://localhost:8080"},
 		AllowMethods: []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodPatch},
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
 	}))
 	e.Use(middleware.RequestLogger())
 
+	// Swagger documentation
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
+
 	// Health check
-	e.GET("/health", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]interface{}{
-			"status":  "ok",
-			"version": cfg.App.Version,
-		})
-	})
+	e.GET("/health", healthCheck(cfg))
 
 	// Setup routes
 	api := e.Group("/api/v1")
@@ -123,4 +141,20 @@ func main() {
 	}
 
 	logger.Info("Server stopped")
+}
+
+// @Summary Health Check
+// @Description Check if the API is running
+// @Tags health
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /health [get]
+func healthCheck(cfg *config.Config) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		return c.JSON(http.StatusOK, map[string]interface{}{
+			"status":  "ok",
+			"version": cfg.App.Version,
+		})
+	}
 }
